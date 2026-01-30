@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrientes - Calculadora Universal de Substituição</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2ff; /* Indigo-50 */
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #4f46e5; /* Indigo-600 */
+            border-radius: 4px;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom Radio Button Styling */
+        .nutrient-radio:checked + label {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+
+        /* Highlight classes */
+        .highlight-ref {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-chart-pie text-2xl"></i>
+                <h1 class="text-2xl font-bold tracking-tight">Nutrientes</h1>
+            </div>
+            <p class="text-indigo-100 text-sm hidden sm:block">Calculadora Universal TACO</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
+        
+        <!-- Info Alert -->
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-8 rounded-r shadow-sm animate-fade-in">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fa-solid fa-circle-info text-indigo-600 mt-1"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide">Como usar?</h3>
+                    <div class="mt-1 text-sm text-indigo-800">
+                        <p class="mb-2">
+                            Aqui você escolhe o <strong>Nutriente que tem o foco em substituir</strong> (Carboidrato, Proteína, Gordura ou Calorias).
+                        </p>
+                        <p class="mb-2">
+                            O cálculo ajustará a quantidade do novo alimento para atingir exatamente o valor do nutriente escolhido no alimento original (ou sua meta calórica).
+                        </p>
+                        <p class="text-xs text-indigo-600 italic">
+                            *Atenção: Ao igualar um nutriente, os outros podem variar drasticamente. Verifique sempre o cartão completo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-fade-in border border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-indigo-500"></i> Substituição
+            </h2>
+
+            <!-- Nutrient Focus Selector -->
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-600 mb-3">Qual nutriente você quer manter igual?</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    
+                    <input type="radio" name="nutrientFocus" id="focusCarbs" value="carbs" class="hidden nutrient-radio" checked onchange="updateInterfaceMode()">
+                    <label for="focusCarbs" class="cursor-pointer text-center py-2 px-4 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors text-sm font-medium">
+                        <i class="fa-solid fa-wheat-awn mr-1"></i> Carboidratos
+                    </label>
+
+                    <input type="radio" name="nutrientFocus" id="focusProtein" value="protein" class="hidden nutrient-radio" onchange="updateInterfaceMode()">
+                    <label for="focusProtein" class="cursor-pointer text-center py-2 px-4 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors text-sm font-medium">
+                        <i class="fa-solid fa-drumstick-bite mr-1"></i> Proteínas
+                    </label>
+
+                    <input type="radio" name="nutrientFocus" id="focusLipids" value="lipids" class="hidden nutrient-radio" onchange="updateInterfaceMode()">
+                    <label for="focusLipids" class="cursor-pointer text-center py-2 px-4 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors text-sm font-medium">
+                        <i class="fa-solid fa-droplet mr-1"></i> Gorduras
+                    </label>
+
+                    <input type="radio" name="nutrientFocus" id="focusEnergy" value="energy" class="hidden nutrient-radio" onchange="updateInterfaceMode()">
+                    <label for="focusEnergy" class="cursor-pointer text-center py-2 px-4 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors text-sm font-medium">
+                        <i class="fa-solid fa-fire mr-1"></i> Calorias
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Food Selection (Visible for Carbs/Protein/Lipids) -->
+                <div class="relative group" id="sourceFoodContainer">
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Alimento da dieta</label>
+                    <div class="relative">
+                        <input type="text" id="sourceFoodInput" placeholder="Digite o alimento..." 
+                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                            oninput="filterSourceFoods()" onfocus="filterSourceFoods()">
+                        <i class="fa-solid fa-utensils absolute left-3 top-3.5 text-gray-400"></i>
+                        
+                        <!-- Dropdown for Autocomplete -->
+                        <ul id="sourceFoodList" class="hidden absolute z-20 w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-2xl custom-scroll">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Quantity/Calories Input -->
+                <div class="col-span-1" id="amountContainer">
+                    <label class="block text-sm font-medium text-gray-600 mb-2" id="amountLabel">Quantidade (gramas)</label>
+                    <div class="relative">
+                        <input type="number" id="sourceAmount" placeholder="Ex: 100" 
+                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <i class="fa-solid fa-scale-balanced absolute left-3 top-3.5 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="calculate()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calculator"></i> Calcular Substituição
+            </button>
+        </div>
+
+        <!-- Results Section (Hidden by default) -->
+        <div id="resultsSection" class="hidden animate-fade-in">
+            
+            <!-- Summary Card -->
+            <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                
+                <h3 class="text-sm font-bold uppercase tracking-wider opacity-80 mb-1">Referência</h3>
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <div class="text-2xl md:text-3xl font-bold" id="resSourceName">Nome do Alimento</div>
+                        <div class="text-lg opacity-90" id="resSourcePortionContainer">Porção de <span id="resSourceAmount" class="font-bold bg-white/20 px-2 rounded">0g</span></div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <!-- Dynamic Label -->
+                        <div class="text-xs uppercase opacity-70" id="resFocusLabel">Nutriente Foco</div>
+                        <div class="text-3xl font-bold" id="resFocusTotal">0g</div>
+                    </div>
+                </div>
+
+                <!-- Small grid for other nutrients -->
+                <div class="mt-4 pt-4 border-t border-white/20 grid grid-cols-4 gap-2 text-center text-sm">
+                    <div id="boxCarbs" class="p-1">
+                        <span class="block opacity-60 text-xs">Carbo</span>
+                        <span class="font-normal" id="resRefCarbs">-</span>
+                    </div>
+                    <div id="boxProtein" class="p-1">
+                        <span class="block opacity-60 text-xs">Prot</span>
+                        <span class="font-normal" id="resRefProtein">-</span>
+                    </div>
+                    <div id="boxLipids" class="p-1">
+                        <span class="block opacity-60 text-xs">Gord</span>
+                        <span class="font-normal" id="resRefLipids">-</span>
+                    </div>
+                    <div id="boxEnergy" class="p-1">
+                        <span class="block opacity-60 text-xs">Kcal</span>
+                        <span class="font-normal" id="resRefEnergy">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Replacements Header -->
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-bold text-gray-800">Opções de Substituição</h3>
+                <span class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full border border-indigo-200">Top 30</span>
+            </div>
+
+            <!-- Search Instruction & Input -->
+            <div class="mb-6">
+                <label for="targetSearch" class="block text-sm text-gray-500 mb-2 pl-1">
+                    <i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i>
+                    Use a lupa para encontrar um substituto específico:
+                </label>
+                <div class="relative">
+                    <input type="text" id="targetSearch" placeholder="Pesquisar substituto..." 
+                        class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        oninput="filterResults()">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-indigo-600 text-lg"></i>
+                </div>
+            </div>
+
+            <!-- List of Cards -->
+            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Cards injected by JS -->
+            </div>
+            
+            <p id="noResultsMsg" class="hidden text-center text-gray-500 py-8">Nenhum alimento encontrado com esse nome.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-8 mt-auto">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <p class="mb-2">Dados nutricionais baseados na <strong>Tabela TACO, 4ª Edição (2011)</strong>.</p>
+            <div class="w-16 h-1 bg-indigo-600 mx-auto my-4 rounded"></div>
+            <p class="text-sm">
+                Feito por <strong class="text-white">Rômulo Ferreira Monteiro</strong><br>
+                <a href="https://www.instagram.com/romulof.monteiro/" target="_blank" class="inline-flex items-center gap-2 mt-2 text-indigo-400 hover:text-indigo-300 transition-colors">
+                    <i class="fa-brands fa-instagram"></i> @romulof.monteiro
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        // --- 1. DATASET: TACO 2011 (General Selection) ---
+        // Values per 100g: energy (kcal), protein (g), lipids (g), carbs (g)
+        const tacoGeneral = [
+            // Cereais e Derivados
+            { name: "Arroz, branco, cozido", category: "Cereais", energy: 128, protein: 2.5, lipids: 0.2, carbs: 28.1 },
+            { name: "Arroz, integral, cozido", category: "Cereais", energy: 124, protein: 2.6, lipids: 1.0, carbs: 25.8 },
+            { name: "Aveia, flocos, crua", category: "Cereais", energy: 394, protein: 13.9, lipids: 8.5, carbs: 66.6 },
+            { name: "Pão, francês", category: "Panificados", energy: 300, protein: 8.0, lipids: 3.1, carbs: 58.6 },
+            { name: "Pão, integral", category: "Panificados", energy: 253, protein: 9.4, lipids: 3.7, carbs: 49.9 },
+            { name: "Macarrão, cozido", category: "Massas", energy: 157, protein: 5.8, lipids: 0.9, carbs: 30.8 },
+            
+            // Verduras, Legumes e Tubérculos
+            { name: "Batata, inglesa, cozida", category: "Tubérculos", energy: 52, protein: 1.2, lipids: 0.0, carbs: 11.9 },
+            { name: "Batata, doce, cozida", category: "Tubérculos", energy: 77, protein: 0.6, lipids: 0.1, carbs: 18.4 },
+            { name: "Mandioca, cozida", category: "Tubérculos", energy: 125, protein: 0.6, lipids: 0.3, carbs: 30.1 },
+            { name: "Alface, americana", category: "Verduras", energy: 9, protein: 0.6, lipids: 0.1, carbs: 1.7 },
+            { name: "Brócolis, cozido", category: "Verduras", energy: 25, protein: 2.1, lipids: 0.5, carbs: 4.4 },
+            { name: "Cenoura, cozida", category: "Verduras", energy: 30, protein: 0.8, lipids: 0.2, carbs: 6.7 },
+            
+            // Frutas
+            { name: "Banana, prata", category: "Frutas", energy: 98, protein: 1.3, lipids: 0.1, carbs: 26.0 },
+            { name: "Maçã, Fuji", category: "Frutas", energy: 56, protein: 0.3, lipids: 0.0, carbs: 15.2 },
+            { name: "Abacate", category: "Frutas", energy: 96, protein: 1.2, lipids: 8.4, carbs: 6.0 },
+            { name: "Laranja, pera", category: "Frutas", energy: 37, protein: 1.0, lipids: 0.1, carbs: 8.9 },
+
+            // Leguminosas
+            { name: "Feijão, carioca, cozido", category: "Leguminosas", energy: 76, protein: 4.8, lipids: 0.5, carbs: 13.6 },
+            { name: "Feijão, preto, cozido", category: "Leguminosas", energy: 77, protein: 4.5, lipids: 0.5, carbs: 14.0 },
+            { name: "Lentilha, cozida", category: "Leguminosas", energy: 93, protein: 6.3, lipids: 0.5, carbs: 16.3 },
+            { name: "Soja, cozida", category: "Leguminosas", energy: 173, protein: 16.7, lipids: 9.9, carbs: 9.9 },
+
+            // Carnes e Ovos
+            { name: "Frango, peito, grelhado", category: "Carnes", energy: 159, protein: 32.0, lipids: 2.5, carbs: 0.0 },
+            { name: "Carne bovina, patinho, grelhado", category: "Carnes", energy: 219, protein: 35.9, lipids: 7.3, carbs: 0.0 },
+            { name: "Carne bovina, acém, cozido", category: "Carnes", energy: 215, protein: 26.7, lipids: 10.9, carbs: 0.0 },
+            { name: "Ovo, cozido", category: "Ovos", energy: 146, protein: 13.3, lipids: 9.5, carbs: 0.6 },
+            { name: "Ovo, frito", category: "Ovos", energy: 240, protein: 15.6, lipids: 18.6, carbs: 1.2 },
+            { name: "Peixe, tilápia, assada", category: "Pescados", energy: 128, protein: 26.6, lipids: 2.0, carbs: 0.0 },
+
+            // Laticínios
+            { name: "Leite, integral", category: "Laticínios", energy: 60, protein: 3.2, lipids: 3.0, carbs: 5.0 },
+            { name: "Queijo, muçarela", category: "Laticínios", energy: 330, protein: 22.6, lipids: 25.2, carbs: 3.0 },
+            { name: "Iogurte, natural", category: "Laticínios", energy: 51, protein: 4.1, lipids: 3.0, carbs: 1.9 },
+
+            // Óleos e Gorduras
+            { name: "Azeite de oliva", category: "Óleos", energy: 884, protein: 0.0, lipids: 100.0, carbs: 0.0 },
+            { name: "Manteiga", category: "Óleos", energy: 726, protein: 0.4, lipids: 82.0, carbs: 0.1 }
+        ];
+
+        // Sort Data Alphabetically
+        tacoGeneral.sort((a, b) => a.name.localeCompare(b.name));
+
+        let currentFocusNutrient = 'carbs'; // default
+        let sourceValues = {};
+        let selectedFood = null;
+
+        // --- 2. INTERFACE & MODE LOGIC ---
+        function updateInterfaceMode() {
+            const radios = document.getElementsByName('nutrientFocus');
+            for (const radio of radios) {
+                if (radio.checked) {
+                    currentFocusNutrient = radio.value;
+                    break;
+                }
+            }
+
+            const sourceContainer = document.getElementById('sourceFoodContainer');
+            const amountLabel = document.getElementById('amountLabel');
+            const sourceInput = document.getElementById('sourceFoodInput');
+            const amountContainer = document.getElementById('amountContainer');
+
+            if (currentFocusNutrient === 'energy') {
+                // Calories Mode: Hide Source Food, Change Label
+                sourceContainer.classList.add('hidden');
+                amountContainer.classList.remove('md:col-span-1');
+                amountContainer.classList.add('md:col-span-2'); // Expand to full width
+                amountLabel.innerText = "Calorias (kcal)";
+                sourceInput.value = ''; 
+                selectedFood = null;
+            } else {
+                // Nutrient Mode: Show Source Food, Reset Label
+                sourceContainer.classList.remove('hidden');
+                amountContainer.classList.remove('md:col-span-2');
+                amountContainer.classList.add('md:col-span-1');
+                amountLabel.innerText = "Quantidade (gramas)";
+            }
+        }
+
+        // --- 3. INPUT AUTOCOMPLETE LOGIC ---
+        const sourceInput = document.getElementById('sourceFoodInput');
+        const sourceList = document.getElementById('sourceFoodList');
+
+        function filterSourceFoods() {
+            const query = sourceInput.value.toLowerCase();
+            sourceList.innerHTML = '';
+            
+            if (query.length < 1) {
+                sourceList.classList.add('hidden');
+                return;
+            }
+
+            const filtered = tacoGeneral.filter(f => f.name.toLowerCase().includes(query));
+
+            if (filtered.length > 0) {
+                sourceList.classList.remove('hidden');
+                filtered.forEach(food => {
+                    const li = document.createElement('li');
+                    li.className = "px-4 py-2 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0 text-sm";
+                    li.innerHTML = `<strong>${food.name}</strong> <span class="text-xs text-gray-500">(${food.category})</span>`;
+                    li.onclick = () => selectSourceFood(food);
+                    sourceList.appendChild(li);
+                });
+            } else {
+                sourceList.classList.add('hidden');
+            }
+        }
+
+        function selectSourceFood(food) {
+            sourceInput.value = food.name;
+            selectedFood = food;
+            sourceList.classList.add('hidden');
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!sourceInput.contains(e.target) && !sourceList.contains(e.target)) {
+                sourceList.classList.add('hidden');
+            }
+        });
+
+        // --- 4. CALCULATION LOGIC ---
+        function calculate() {
+            const amount = parseFloat(document.getElementById('sourceAmount').value);
+            
+            if (!amount || amount <= 0) {
+                alert("Por favor, digite um valor válido.");
+                return;
+            }
+
+            // --- ENERGY MODE (META CALÓRICA) ---
+            if (currentFocusNutrient === 'energy') {
+                // No source food needed
+                sourceValues = {
+                    amount: 0,
+                    energy: amount, // The user input IS the calorie target
+                    protein: 0,
+                    lipids: 0,
+                    carbs: 0
+                };
+                
+                // Update UI for Calories
+                document.getElementById('resSourceName').innerText = "Meta Calórica";
+                document.getElementById('resSourcePortionContainer').classList.add('hidden'); // Hide portion
+                
+                document.getElementById('resFocusTotal').innerText = `${amount} kcal`;
+                
+                // Clear Ref Grid for other nutrients as they are irrelevant here
+                document.getElementById('resRefCarbs').innerText = "-";
+                document.getElementById('resRefProtein').innerText = "-";
+                document.getElementById('resRefLipids').innerText = "-";
+                document.getElementById('resRefEnergy').innerText = `${amount}`;
+
+            } else {
+                // --- NUTRIENT MODE (REQUIRE FOOD) ---
+                if (!selectedFood) {
+                    alert("Por favor, selecione um alimento da dieta.");
+                    return;
+                }
+                
+                if (selectedFood[currentFocusNutrient] <= 0) {
+                    alert(`O alimento selecionado (${selectedFood.name}) não contém quantidade significativa de ${getNutrientName(currentFocusNutrient)} para servir de base.`);
+                    return;
+                }
+
+                // Calculate Totals for Source Food
+                sourceValues = {
+                    amount: amount,
+                    energy: (selectedFood.energy / 100) * amount,
+                    protein: (selectedFood.protein / 100) * amount,
+                    lipids: (selectedFood.lipids / 100) * amount,
+                    carbs: (selectedFood.carbs / 100) * amount
+                };
+
+                // Update Summary UI
+                document.getElementById('resSourceName').innerText = selectedFood.name;
+                document.getElementById('resSourcePortionContainer').classList.remove('hidden');
+                document.getElementById('resSourceAmount').innerText = `${amount}g`;
+                
+                // Update Focus Total Display
+                let focusUnit = 'g';
+                let focusVal = sourceValues[currentFocusNutrient];
+                document.getElementById('resFocusTotal').innerText = `${focusVal.toFixed(1).replace('.', ',')}${focusUnit}`;
+
+                // Update Ref Grid
+                document.getElementById('resRefCarbs').innerText = sourceValues.carbs.toFixed(1) + 'g';
+                document.getElementById('resRefProtein').innerText = sourceValues.protein.toFixed(1) + 'g';
+                document.getElementById('resRefLipids').innerText = sourceValues.lipids.toFixed(1) + 'g';
+                document.getElementById('resRefEnergy').innerText = sourceValues.energy.toFixed(0) + 'kcal';
+            }
+
+            // --- DYNAMIC LABEL & HIGHLIGHTING ---
+            const nutName = getNutrientName(currentFocusNutrient);
+            document.getElementById('resFocusLabel').innerText = `Nutriente Foco (${nutName})`;
+            
+            // Remove highlight from all
+            ['boxCarbs', 'boxProtein', 'boxLipids', 'boxEnergy'].forEach(id => {
+                document.getElementById(id).classList.remove('highlight-ref');
+            });
+
+            // Add highlight to current
+            const mapId = { 'carbs': 'boxCarbs', 'protein': 'boxProtein', 'lipids': 'boxLipids', 'energy': 'boxEnergy' };
+            document.getElementById(mapId[currentFocusNutrient]).classList.add('highlight-ref');
+
+
+            // Show results
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+
+            renderCards(tacoGeneral);
+        }
+
+        function getNutrientName(key) {
+            const map = { 'energy': 'Calorias', 'protein': 'Proteína', 'lipids': 'Gordura', 'carbs': 'Carboidrato' };
+            return map[key];
+        }
+
+        // --- 5. RENDER RESULTS ---
+        function renderCards(dataSet) {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            
+            // Filter list: 
+            // 1. Exclude same food (if selectedFood exists)
+            // 2. Exclude foods with 0 of target nutrient (to avoid divide by zero)
+            let list = dataSet.filter(f => {
+                const isSame = selectedFood ? f.name === selectedFood.name : false;
+                return !isSame && f[currentFocusNutrient] > 0;
+            });
+
+            // Filter by search term
+            const searchTerm = document.getElementById('targetSearch').value.toLowerCase();
+            if (searchTerm) {
+                list = list.filter(f => f.name.toLowerCase().includes(searchTerm));
+            } else {
+                list = list.slice(0, 30); // Top 30 default
+            }
+
+            if (list.length === 0) {
+                document.getElementById('noResultsMsg').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('noResultsMsg').classList.add('hidden');
+            }
+
+            list.forEach(food => {
+                // MATH:
+                // TargetAmount = (SourceTotalNutrient / (TargetNutrientPer100 / 100))
+                
+                const sourceTotalOfFocus = sourceValues[currentFocusNutrient];
+                const targetNutrientPer100 = food[currentFocusNutrient];
+                
+                const requiredAmount = sourceTotalOfFocus / (targetNutrientPer100 / 100);
+
+                // Calculate consequences
+                const resEnergy = (food.energy / 100) * requiredAmount;
+                const resProtein = (food.protein / 100) * requiredAmount;
+                const resLipids = (food.lipids / 100) * requiredAmount;
+                const resCarbs = (food.carbs / 100) * requiredAmount;
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col justify-between h-full";
+                
+                card.innerHTML = `
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-1 rounded">${food.category}</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-lg leading-tight">${food.name}</h4>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 mb-1">Para substituir, coma:</p>
+                        <div class="flex items-center gap-2 text-indigo-700 mb-4">
+                            <i class="fa-solid fa-scale-unbalanced text-xl"></i>
+                            <span class="text-3xl font-bold">${Math.round(requiredAmount)}g</span>
+                        </div>
+
+                        <!-- Mini Nutrition Table for Result -->
+                        <div class="bg-gray-50 rounded-lg p-2 text-xs grid grid-cols-2 gap-y-1 text-gray-600">
+                            <div class="${currentFocusNutrient === 'carbs' ? 'font-bold text-indigo-600' : ''}">
+                                CHO: ${resCarbs.toFixed(1)}g
+                            </div>
+                            <div class="${currentFocusNutrient === 'protein' ? 'font-bold text-indigo-600' : ''}">
+                                PTN: ${resProtein.toFixed(1)}g
+                            </div>
+                            <div class="${currentFocusNutrient === 'lipids' ? 'font-bold text-indigo-600' : ''}">
+                                LIP: ${resLipids.toFixed(1)}g
+                            </div>
+                            <div class="${currentFocusNutrient === 'energy' ? 'font-bold text-indigo-600' : ''}">
+                                Kcal: ${Math.round(resEnergy)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- 6. SEARCH FILTER LOGIC ---
+        function filterResults() {
+            // Allow filtering even if source is empty (for calorie mode)
+            if (currentFocusNutrient !== 'energy' && !selectedFood) return;
+            renderCards(tacoGeneral);
+        }
+
+    </script>
+</body>
+</html>
