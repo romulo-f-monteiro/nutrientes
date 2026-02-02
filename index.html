@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nutrientes em dia - </title>
+    <title>Nutrientes - Calculadora Universal de Substituição</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -51,6 +51,19 @@
             transform: scale(1.05);
             transition: all 0.3s ease;
         }
+
+        /* Modal Overlay */
+        #helpModal {
+            transition: opacity 0.3s ease;
+        }
+        #helpModal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #helpModal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col">
@@ -60,42 +73,27 @@
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-chart-pie text-2xl"></i>
-                <h1 class="text-2xl font-bold tracking-tight">Nutrientes em dia </h1>
+                <h1 class="text-2xl font-bold tracking-tight">Nutrientes</h1>
             </div>
-            <p class="text-indigo-100 text-sm hidden sm:block"></p>
+            
+            <div class="flex items-center gap-4">
+                <!-- Subtítulo removido conforme solicitado -->
+                <!-- Botão de Ajuda -->
+                <button onclick="toggleHelp()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 border border-indigo-400">
+                    <i class="fa-regular fa-circle-question"></i>
+                    Como usar
+                </button>
+            </div>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
         
-        <!-- Info Alert -->
-        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-8 rounded-r shadow-sm animate-fade-in">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <i class="fa-solid fa-circle-info text-indigo-600 mt-1"></i>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide">Como usar?</h3>
-                    <div class="mt-1 text-sm text-indigo-800">
-                        <p class="mb-2">
-                            Aqui você escolhe o <strong>Nutriente que tem o foco em substituir</strong> (Carboidrato, Proteína, Gordura ou Calorias).
-                        </p>
-                        <p class="mb-2">
-                            O cálculo ajustará a quantidade do novo alimento para atingir exatamente o valor do nutriente escolhido no alimento original (ou sua meta calórica).
-                        </p>
-                        <p class="text-xs text-indigo-600 italic">
-                            *Atenção: Ao igualar um nutriente, os outros podem variar drasticamente. Verifique sempre os outros nutrientes.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Input Section -->
         <div class="bg-white rounded-2xl shadow-xl p-6 mb-8 animate-fade-in border border-gray-100">
             <h2 class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-sliders text-indigo-500"></i> Substituição
+                <i class="fa-solid fa-sliders text-indigo-500"></i> Configurar Substituição
             </h2>
 
             <!-- Nutrient Focus Selector -->
@@ -128,9 +126,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Food Selection (Visible for Carbs/Protein/Lipids) -->
                 <div class="relative group" id="sourceFoodContainer">
-                    <label class="block text-sm font-medium text-gray-600 mb-2">Alimento da dieta</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-2">Alimento da dieta (Referência)</label>
                     <div class="relative">
-                        <input type="text" id="sourceFoodInput" placeholder="Digite o alimento..." 
+                        <input type="text" id="sourceFoodInput" placeholder="Digite o alimento (ex: Arroz)..." 
                             class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                             oninput="filterSourceFoods()" onfocus="filterSourceFoods()">
                         <i class="fa-solid fa-utensils absolute left-3 top-3.5 text-gray-400"></i>
@@ -203,7 +201,7 @@
             <!-- Search Replacements Header -->
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-xl font-bold text-gray-800">Opções de Substituição</h3>
-                <span class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full border border-indigo-200">Top 30</span>
+                <span class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full border border-indigo-200">TACO</span>
             </div>
 
             <!-- Search Instruction & Input -->
@@ -213,7 +211,7 @@
                     Use a lupa para encontrar um substituto específico:
                 </label>
                 <div class="relative">
-                    <input type="text" id="targetSearch" placeholder="Pesquisar substituto..." 
+                    <input type="text" id="targetSearch" placeholder="Pesquisar substituto (ex: Batata)..." 
                         class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                         oninput="filterResults()">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-indigo-600 text-lg"></i>
@@ -229,6 +227,59 @@
         </div>
 
     </main>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100">
+            <div class="bg-indigo-600 p-5 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i> Como usar
+                </h2>
+                <button onclick="toggleHelp()" class="text-white/80 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Link do Vídeo (Adicionado) -->
+                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
+                    <p class="text-sm text-indigo-800 font-medium mb-3">Prefere ver em vídeo?</p>
+                    <a href="https://youtu.be/-BtPZ-sjNzM" target="_blank" class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-xl font-bold transition-transform transform hover:-translate-y-0.5 shadow-md">
+                        <i class="fa-brands fa-youtube text-xl"></i>
+                        Assistir Tutorial
+                    </a>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="bg-indigo-100 p-3 rounded-full h-10 w-10 flex items-center justify-center text-indigo-600 font-bold shrink-0">1</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Escolha o nutriente</h3>
+                        <p class="text-gray-600 text-sm">Selecione qual nutriente você quer manter igual (ex: quer trocar arroz por batata mantendo o mesmo Carboidrato).</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="bg-indigo-100 p-3 rounded-full h-10 w-10 flex items-center justify-center text-indigo-600 font-bold shrink-0">2</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Defina o alimento e a quantidade</h3>
+                        <p class="text-gray-600 text-sm">Digite o alimento da sua dieta atual e a quantidade em gramas.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="bg-indigo-100 p-3 rounded-full h-10 w-10 flex items-center justify-center text-indigo-600 font-bold shrink-0">3</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Veja o Resultado</h3>
+                        <p class="text-gray-600 text-sm">O app calculará exatamente quanto você deve comer de qualquer outro alimento para bater aquela meta.</p>
+                    </div>
+                </div>
+
+                <button onclick="toggleHelp()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors">
+                    Entendi!
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-400 py-8 mt-auto">
@@ -246,53 +297,120 @@
 
     <!-- JavaScript Data & Logic -->
     <script>
-        // --- 1. DATASET: TACO 2011 (General Selection) ---
-        // Values per 100g: energy (kcal), protein (g), lipids (g), carbs (g)
+        // --- 1. BANCO DE DADOS TACO EXPANDIDO ---
+        // Valores por 100g: energy (kcal), carbs (g), protein (g), lipids (g)
         const tacoGeneral = [
             // Cereais e Derivados
-            { name: "Arroz, branco, cozido", category: "Cereais", energy: 128, protein: 2.5, lipids: 0.2, carbs: 28.1 },
-            { name: "Arroz, integral, cozido", category: "Cereais", energy: 124, protein: 2.6, lipids: 1.0, carbs: 25.8 },
-            { name: "Aveia, flocos, crua", category: "Cereais", energy: 394, protein: 13.9, lipids: 8.5, carbs: 66.6 },
-            { name: "Pão, francês", category: "Panificados", energy: 300, protein: 8.0, lipids: 3.1, carbs: 58.6 },
-            { name: "Pão, integral", category: "Panificados", energy: 253, protein: 9.4, lipids: 3.7, carbs: 49.9 },
-            { name: "Macarrão, cozido", category: "Massas", energy: 157, protein: 5.8, lipids: 0.9, carbs: 30.8 },
-            
-            // Verduras, Legumes e Tubérculos
-            { name: "Batata, inglesa, cozida", category: "Tubérculos", energy: 52, protein: 1.2, lipids: 0.0, carbs: 11.9 },
-            { name: "Batata, doce, cozida", category: "Tubérculos", energy: 77, protein: 0.6, lipids: 0.1, carbs: 18.4 },
-            { name: "Mandioca, cozida", category: "Tubérculos", energy: 125, protein: 0.6, lipids: 0.3, carbs: 30.1 },
-            { name: "Alface, americana", category: "Verduras", energy: 9, protein: 0.6, lipids: 0.1, carbs: 1.7 },
-            { name: "Brócolis, cozido", category: "Verduras", energy: 25, protein: 2.1, lipids: 0.5, carbs: 4.4 },
-            { name: "Cenoura, cozida", category: "Verduras", energy: 30, protein: 0.8, lipids: 0.2, carbs: 6.7 },
-            
-            // Frutas
-            { name: "Banana, prata", category: "Frutas", energy: 98, protein: 1.3, lipids: 0.1, carbs: 26.0 },
-            { name: "Maçã, Fuji", category: "Frutas", energy: 56, protein: 0.3, lipids: 0.0, carbs: 15.2 },
-            { name: "Abacate", category: "Frutas", energy: 96, protein: 1.2, lipids: 8.4, carbs: 6.0 },
-            { name: "Laranja, pera", category: "Frutas", energy: 37, protein: 1.0, lipids: 0.1, carbs: 8.9 },
+            { name: "Arroz, integral, cozido", category: "Cereais", energy: 124, carbs: 25.8, protein: 2.6, lipids: 1.0 },
+            { name: "Arroz, tipo 1, cozido", category: "Cereais", energy: 128, carbs: 28.1, protein: 2.5, lipids: 0.2 },
+            { name: "Aveia, flocos, crua", category: "Cereais", energy: 394, carbs: 66.6, protein: 13.9, lipids: 8.5 },
+            { name: "Milho, verde, cru", category: "Cereais", energy: 138, carbs: 28.6, protein: 6.6, lipids: 0.6 },
+            { name: "Pão, francês", category: "Panificados", energy: 300, carbs: 58.6, protein: 8.0, lipids: 3.1 },
+            { name: "Pão, de forma, integral", category: "Panificados", energy: 253, carbs: 49.9, protein: 9.4, lipids: 3.7 },
+            { name: "Pão, de queijo, assado", category: "Panificados", energy: 363, carbs: 34.2, protein: 5.1, lipids: 24.6 }, // Novo
+            { name: "Macarrão, trigo, cozido", category: "Massas", energy: 157, carbs: 30.8, protein: 5.8, lipids: 0.9 },
+            { name: "Cuscuz de milho, cozido", category: "Cereais", energy: 113, carbs: 25.3, protein: 2.2, lipids: 0.7 },
+            { name: "Biscoito, maisena", category: "Panificados", energy: 443, carbs: 74.3, protein: 8.1, lipids: 12.0 },
+            { name: "Biscoito, recheado, chocolate", category: "Panificados", energy: 472, carbs: 71.0, protein: 6.5, lipids: 19.6 }, // Novo
+            { name: "Tapioca, goma, hidratada", category: "Cereais", energy: 236, carbs: 54.8, protein: 0.1, lipids: 0.0 }, // Novo
+            { name: "Farinha, de mandioca, crua", category: "Cereais", energy: 361, carbs: 87.9, protein: 1.6, lipids: 0.3 }, // Novo
+            { name: "Farinha, de trigo", category: "Cereais", energy: 360, carbs: 75.1, protein: 9.8, lipids: 1.4 }, // Novo
+            { name: "Pipoca, sem sal, estourada", category: "Cereais", energy: 375, carbs: 70.0, protein: 10.0, lipids: 4.0 }, // Estimado (TACO milho cru ref)
 
-            // Leguminosas
-            { name: "Feijão, carioca, cozido", category: "Leguminosas", energy: 76, protein: 4.8, lipids: 0.5, carbs: 13.6 },
-            { name: "Feijão, preto, cozido", category: "Leguminosas", energy: 77, protein: 4.5, lipids: 0.5, carbs: 14.0 },
-            { name: "Lentilha, cozida", category: "Leguminosas", energy: 93, protein: 6.3, lipids: 0.5, carbs: 16.3 },
-            { name: "Soja, cozida", category: "Leguminosas", energy: 173, protein: 16.7, lipids: 9.9, carbs: 9.9 },
+            // Tubérculos e Raízes
+            { name: "Batata, doce, cozida", category: "Tubérculos", energy: 77, carbs: 18.4, protein: 0.6, lipids: 0.1 },
+            { name: "Batata, inglesa, cozida", category: "Tubérculos", energy: 52, carbs: 11.9, protein: 1.2, lipids: 0.0 },
+            { name: "Batata, frita", category: "Tubérculos", energy: 267, carbs: 35.6, protein: 5.0, lipids: 13.1 },
+            { name: "Mandioca, cozida", category: "Tubérculos", energy: 125, carbs: 30.1, protein: 0.6, lipids: 0.3 },
+            { name: "Mandioquinha, cozida", category: "Tubérculos", energy: 80, carbs: 18.9, protein: 0.9, lipids: 0.2 },
+            { name: "Inhame, cozido", category: "Tubérculos", energy: 116, carbs: 27.8, protein: 1.5, lipids: 0.1 },
+
+            // Verduras e Legumes
+            { name: "Abóbora, cabotian, cozida", category: "Legumes", energy: 48, carbs: 10.8, protein: 1.4, lipids: 0.7 },
+            { name: "Abobrinha, italiana, cozida", category: "Legumes", energy: 15, carbs: 3.0, protein: 1.1, lipids: 0.2 },
+            { name: "Alface, americana, crua", category: "Verduras", energy: 9, carbs: 1.7, protein: 0.6, lipids: 0.1 },
+            { name: "Brócolis, cozido", category: "Verduras", energy: 25, carbs: 4.4, protein: 2.1, lipids: 0.5 },
+            { name: "Cenoura, crua", category: "Legumes", energy: 34, carbs: 7.7, protein: 1.3, lipids: 0.2 },
+            { name: "Cenoura, cozida", category: "Legumes", energy: 30, carbs: 6.7, protein: 0.8, lipids: 0.2 },
+            { name: "Couve, manteiga, refogada", category: "Verduras", energy: 90, carbs: 8.7, protein: 1.7, lipids: 6.6 },
+            { name: "Tomate, salada", category: "Legumes", energy: 15, carbs: 3.1, protein: 1.1, lipids: 0.2 },
+            { name: "Beterraba, cozida", category: "Legumes", energy: 32, carbs: 7.2, protein: 1.3, lipids: 0.1 },
+            { name: "Chuchu, cozido", category: "Legumes", energy: 19, carbs: 4.8, protein: 0.4, lipids: 0.0 },
+            { name: "Espinafre, refogado", category: "Verduras", energy: 67, carbs: 4.2, protein: 2.7, lipids: 5.6 },
+            { name: "Salsa, crua", category: "Verduras", energy: 34, carbs: 5.7, protein: 3.3, lipids: 0.6 },
+            { name: "Vagem, cozida", category: "Legumes", energy: 35, carbs: 7.8, protein: 1.8, lipids: 0.2 },
+            { name: "Quiabo, cozido", category: "Legumes", energy: 37, carbs: 6.4, protein: 1.9, lipids: 0.3 }, // Novo
+            { name: "Pepino, cru", category: "Legumes", energy: 10, carbs: 2.0, protein: 0.9, lipids: 0.1 }, // Novo
+            { name: "Rúcula, crua", category: "Verduras", energy: 13, carbs: 2.2, protein: 1.8, lipids: 0.1 }, // Novo
+
+            // Frutas
+            { name: "Abacate, cru", category: "Frutas", energy: 96, carbs: 6.0, protein: 1.2, lipids: 8.4 },
+            { name: "Abacaxi, pérola, cru", category: "Frutas", energy: 48, carbs: 12.3, protein: 0.9, lipids: 0.1 },
+            { name: "Açaí, polpa, congelada", category: "Frutas", energy: 58, carbs: 6.2, protein: 0.8, lipids: 3.9 }, // Novo
+            { name: "Banana, nanica, crua", category: "Frutas", energy: 92, carbs: 23.8, protein: 1.4, lipids: 0.1 },
+            { name: "Banana, prata, crua", category: "Frutas", energy: 98, carbs: 26.0, protein: 1.3, lipids: 0.1 },
+            { name: "Laranja, pera, crua", category: "Frutas", energy: 37, carbs: 8.9, protein: 1.0, lipids: 0.1 },
+            { name: "Limão, tahiti, cru", category: "Frutas", energy: 32, carbs: 11.1, protein: 0.9, lipids: 0.1 }, // Novo
+            { name: "Maçã, fuji, com casca", category: "Frutas", energy: 56, carbs: 15.2, protein: 0.3, lipids: 0.0 },
+            { name: "Mamão, formosa, cru", category: "Frutas", energy: 45, carbs: 11.6, protein: 0.8, lipids: 0.1 },
+            { name: "Mamão, papaia, cru", category: "Frutas", energy: 40, carbs: 10.4, protein: 0.5, lipids: 0.1 },
+            { name: "Melancia, crua", category: "Frutas", energy: 33, carbs: 8.1, protein: 0.9, lipids: 0.0 },
+            { name: "Morango, cru", category: "Frutas", energy: 30, carbs: 6.8, protein: 0.9, lipids: 0.3 },
+            { name: "Uva, rubi, crua", category: "Frutas", energy: 49, carbs: 12.7, protein: 0.6, lipids: 0.2 },
+            { name: "Manga, palmer, crua", category: "Frutas", energy: 72, carbs: 19.4, protein: 0.4, lipids: 0.2 },
+            { name: "Pera, williams, crua", category: "Frutas", energy: 53, carbs: 14.0, protein: 0.6, lipids: 0.1 }, // Novo
 
             // Carnes e Ovos
-            { name: "Frango, peito, grelhado", category: "Carnes", energy: 159, protein: 32.0, lipids: 2.5, carbs: 0.0 },
-            { name: "Carne bovina, patinho, grelhado", category: "Carnes", energy: 219, protein: 35.9, lipids: 7.3, carbs: 0.0 },
-            { name: "Carne bovina, acém, cozido", category: "Carnes", energy: 215, protein: 26.7, lipids: 10.9, carbs: 0.0 },
-            { name: "Ovo, cozido", category: "Ovos", energy: 146, protein: 13.3, lipids: 9.5, carbs: 0.6 },
-            { name: "Ovo, frito", category: "Ovos", energy: 240, protein: 15.6, lipids: 18.6, carbs: 1.2 },
-            { name: "Peixe, tilápia, assada", category: "Pescados", energy: 128, protein: 26.6, lipids: 2.0, carbs: 0.0 },
+            { name: "Carne, bovina, patinho, sem gordura, grelhado", category: "Carnes", energy: 219, carbs: 0.0, protein: 35.9, lipids: 7.3 },
+            { name: "Carne, bovina, contra-filé, sem gordura, grelhado", category: "Carnes", energy: 194, carbs: 0.0, protein: 32.4, lipids: 6.0 },
+            { name: "Carne, bovina, acém, cozido", category: "Carnes", energy: 215, carbs: 0.0, protein: 26.7, lipids: 10.9 },
+            { name: "Carne, bovina, moída, refogada", category: "Carnes", energy: 210, carbs: 0.0, protein: 26.0, lipids: 11.0 }, // Estimado (média)
+            { name: "Frango, peito, sem pele, grelhado", category: "Carnes", energy: 159, carbs: 0.0, protein: 32.0, lipids: 2.5 },
+            { name: "Frango, sobrecoxa, sem pele, assada", category: "Carnes", energy: 233, carbs: 0.0, protein: 28.6, lipids: 12.3 },
+            { name: "Porco, bisteca, grelhada", category: "Carnes", energy: 164, carbs: 0.0, protein: 23.1, lipids: 8.0 }, // Novo (estimado/TACO similar)
+            { name: "Bacon, frito", category: "Carnes", energy: 697, carbs: 0.0, protein: 37.0, lipids: 57.4 }, // Novo
+            { name: "Ovo, de galinha, cozido", category: "Ovos", energy: 146, carbs: 0.6, protein: 13.3, lipids: 9.5 },
+            { name: "Ovo, de galinha, frito", category: "Ovos", energy: 240, carbs: 1.2, protein: 15.6, lipids: 18.6 },
+            { name: "Salame", category: "Carnes", energy: 398, carbs: 2.9, protein: 25.8, lipids: 30.6 },
+            { name: "Mortadela", category: "Carnes", energy: 269, carbs: 3.7, protein: 12.0, lipids: 21.6 }, // Novo
+            { name: "Presunto, cozido", category: "Carnes", energy: 128, carbs: 0.0, protein: 18.0, lipids: 6.0 },
+
+            // Pescados
+            { name: "Salmão, sem pele, grelhado", category: "Pescados", energy: 229, carbs: 0.0, protein: 23.9, lipids: 14.0 },
+            { name: "Sardinha, assada", category: "Pescados", energy: 164, carbs: 0.0, protein: 32.2, lipids: 3.0 },
+            { name: "Sardinha, em óleo (conserva)", category: "Pescados", energy: 285, carbs: 0.0, protein: 15.9, lipids: 24.0 },
+            { name: "Tilápia, filé, grelhado", category: "Pescados", energy: 128, carbs: 0.0, protein: 26.6, lipids: 2.0 },
+            { name: "Atum, em óleo (conserva)", category: "Pescados", energy: 166, carbs: 0.0, protein: 26.2, lipids: 6.0 },
+            { name: "Camarão, cozido", category: "Pescados", energy: 82, carbs: 0.0, protein: 17.6, lipids: 0.8 }, // Novo
+
+            // Leguminosas
+            { name: "Feijão, carioca, cozido", category: "Leguminosas", energy: 76, carbs: 13.6, protein: 4.8, lipids: 0.5 },
+            { name: "Feijão, preto, cozido", category: "Leguminosas", energy: 77, carbs: 14.0, protein: 4.5, lipids: 0.5 },
+            { name: "Lentilha, cozida", category: "Leguminosas", energy: 93, carbs: 16.3, protein: 6.3, lipids: 0.5 },
+            { name: "Grão de bico, cozido", category: "Leguminosas", energy: 100, carbs: 15.0, protein: 6.0, lipids: 2.0 },
+            { name: "Soja, extrato solúvel (pó)", category: "Leguminosas", energy: 334, carbs: 25.7, protein: 36.3, lipids: 8.8 },
+            { name: "Tofu (queijo de soja)", category: "Leguminosas", energy: 64, carbs: 2.1, protein: 6.6, lipids: 4.0 },
 
             // Laticínios
-            { name: "Leite, integral", category: "Laticínios", energy: 60, protein: 3.2, lipids: 3.0, carbs: 5.0 },
-            { name: "Queijo, muçarela", category: "Laticínios", energy: 330, protein: 22.6, lipids: 25.2, carbs: 3.0 },
-            { name: "Iogurte, natural", category: "Laticínios", energy: 51, protein: 4.1, lipids: 3.0, carbs: 1.9 },
+            { name: "Leite, vaca, integral", category: "Laticínios", energy: 63, carbs: 4.8, protein: 3.1, lipids: 3.5 },
+            { name: "Leite, vaca, desnatado", category: "Laticínios", energy: 35, carbs: 4.9, protein: 3.2, lipids: 0.1 },
+            { name: "Queijo, mozarela", category: "Laticínios", energy: 330, carbs: 3.0, protein: 22.6, lipids: 25.2 },
+            { name: "Queijo, minas, frescal", category: "Laticínios", energy: 264, carbs: 3.2, protein: 17.4, lipids: 20.2 },
+            { name: "Queijo, parmesão", category: "Laticínios", energy: 450, carbs: 1.7, protein: 35.6, lipids: 33.5 }, // Novo
+            { name: "Requeijão, cremoso", category: "Laticínios", energy: 300, carbs: 2.4, protein: 9.6, lipids: 28.0 }, // Novo (média de mercado/TACO similar)
+            { name: "Iogurte, natural, integral", category: "Laticínios", energy: 69, carbs: 4.4, protein: 4.1, lipids: 3.8 },
 
             // Óleos e Gorduras
-            { name: "Azeite de oliva", category: "Óleos", energy: 884, protein: 0.0, lipids: 100.0, carbs: 0.0 },
-            { name: "Manteiga", category: "Óleos", energy: 726, protein: 0.4, lipids: 82.0, carbs: 0.1 }
+            { name: "Azeite de oliva", category: "Óleos", energy: 884, carbs: 0.0, protein: 0.0, lipids: 100.0 },
+            { name: "Manteiga, com sal", category: "Óleos", energy: 726, carbs: 0.1, protein: 0.4, lipids: 82.0 },
+            { name: "Margarina, com sal", category: "Óleos", energy: 723, carbs: 0.0, protein: 0.0, lipids: 82.0 }, // Novo
+            { name: "Maionese", category: "Óleos", energy: 302, carbs: 7.9, protein: 0.7, lipids: 30.0 }, // Novo (versão tradicional)
+
+            // Doces e Outros
+            { name: "Chocolate, ao leite", category: "Doces", energy: 540, carbs: 59.6, protein: 7.2, lipids: 30.3 },
+            { name: "Chocolate, meio amargo", category: "Doces", energy: 475, carbs: 53.0, protein: 6.4, lipids: 29.9 }, // Novo (estimado)
+            { name: "Açúcar, refinado", category: "Doces", energy: 387, carbs: 99.5, protein: 0.3, lipids: 0.0 },
+            { name: "Mel, de abelha", category: "Doces", energy: 309, carbs: 84.0, protein: 0.0, lipids: 0.0 } // Novo
         ];
 
         // Sort Data Alphabetically
@@ -302,7 +420,13 @@
         let sourceValues = {};
         let selectedFood = null;
 
-        // --- 2. INTERFACE & MODE LOGIC ---
+        // --- 2. HELP MODAL LOGIC ---
+        function toggleHelp() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // --- 3. INTERFACE & MODE LOGIC ---
         function updateInterfaceMode() {
             const radios = document.getElementsByName('nutrientFocus');
             for (const radio of radios) {
@@ -334,7 +458,7 @@
             }
         }
 
-        // --- 3. INPUT AUTOCOMPLETE LOGIC ---
+        // --- 4. INPUT AUTOCOMPLETE LOGIC ---
         const sourceInput = document.getElementById('sourceFoodInput');
         const sourceList = document.getElementById('sourceFoodList');
 
@@ -375,7 +499,7 @@
             }
         });
 
-        // --- 4. CALCULATION LOGIC ---
+        // --- 5. CALCULATION LOGIC ---
         function calculate() {
             const amount = parseFloat(document.getElementById('sourceAmount').value);
             
@@ -471,7 +595,7 @@
             return map[key];
         }
 
-        // --- 5. RENDER RESULTS ---
+        // --- 6. RENDER RESULTS ---
         function renderCards(dataSet) {
             const container = document.getElementById('cardsContainer');
             container.innerHTML = '';
@@ -553,7 +677,7 @@
             });
         }
 
-        // --- 6. SEARCH FILTER LOGIC ---
+        // --- 7. SEARCH FILTER LOGIC ---
         function filterResults() {
             // Allow filtering even if source is empty (for calorie mode)
             if (currentFocusNutrient !== 'energy' && !selectedFood) return;
